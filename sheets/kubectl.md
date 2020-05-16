@@ -1,12 +1,26 @@
-## Getting started
+---
+title: kubectl
+category: kubernetes
+layout: 2017/sheet
+tags: [Featured]
+updated: 2020-05-16
+weight: -10
+intro: |
+ Kubectl is a command line tool for controlling Kubernetes clusters. `kubectl` looks for a file named config in the $HOME/.kube directory. You can specify other [kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) files by setting the KUBECONFIG environment variable or by setting the [--kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) flag.
 
-### Kubectl Autocomplete
+This overview covers kubectl syntax, describes the command operations, and provides common examples. For details about each command, including all the supported flags and subcommands, see the [kubectl](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands/) reference documentation. For installation instructions see [installing kubectl](https://kubernetes.io/docs/tasks/kubectl/install/).
+---
 
-#### BASH
+Getting started
+---------------
+
+## Kubectl Autocomplete
+
+### BASH
 
 ```bash
-source <(kubectl completion bash) # active l'auto-complétion pour bash dans le shell courant, le paquet bash-completion devant être installé au préalable
-echo "source <(kubectl completion bash)" >> ~/.bashrc # ajoute l'auto-complétion de manière permanente à votre shell bash
+source <(kubectl completion bash) # setup autocomplete in bash into the current shell, bash-completion package should be installed first.
+echo "source <(kubectl completion bash)" >> ~/.bashrc # add autocomplete permanently to your bash shell.
 ```
 
 You can also use a shorthand alias for `kubectl` that also works with completion:
@@ -16,14 +30,14 @@ alias k=kubectl
 complete -F __start_kubectl k
 ```
 
-#### ZSH
+### ZSH
 
 ```zsh
-source <(kubectl completion zsh)  # active l'auto-complétion pour zsh dans le shell courant
-echo "if [ $commands[kubectl] ]; then source <(kubectl completion zsh); fi" >> ~/.zshrc # ajoute l'auto-complétion de manière permanente à votre shell zsh
+source <(kubectl completion zsh)  # setup autocomplete in zsh into the current shell
+echo "[[ $commands[kubectl] ]] && source <(kubectl completion zsh)" >> ~/.zshrc # add autocomplete permanently to your zsh shell
 ```
 
-### Kubectl Context and Configuration
+## Kubectl Context and Configuration
 
 Set which Kubernetes cluster `kubectl` communicates with and modifies configuration information. See [Authenticating Across Clusters](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/) with kubeconfig documentation for detailed config file information.
 
@@ -57,11 +71,11 @@ kubectl config set-context gce --user=cluster-admin --namespace=foo \
 kubectl config unset users.foo                       # delete user foo
 ```
 
-### Apply
+## Apply
 
 `apply` manages applications through files defining Kubernetes resources. It creates and updates resources in a cluster through running `kubectl apply`. This is the recommended way of managing Kubernetes applications on production. See [Kubectl Book](https://kubectl.docs.kubernetes.io/).
 
-### Creating Objects
+## Creating Objects
 
 Kubernetes manifests can be defined in YAML or JSON. The file extension `.yaml`, `.yml`, and `.json` can be used.
 
@@ -113,7 +127,7 @@ data:
 EOF
 ```
 
-### Viewing, Finding Resources
+## Viewing, Finding Resources
 
 ```bash
 # Get commands with basic output
@@ -177,7 +191,7 @@ kubectl get events --sort-by=.metadata.creationTimestamp
 kubectl diff -f ./my-manifest.yaml
 ```
 
-### Updating Resources
+## Updating Resources
 
 ```bash
 kubectl set image deployment/frontend www=image:v2               # Rolling update "www" containers of "frontend" deployment, updating the image
@@ -204,7 +218,7 @@ kubectl annotate pods my-pod icon-url=http://goo.gl/XXBTWq       # Add an annota
 kubectl autoscale deployment foo --min=2 --max=10                # Auto scale a deployment "foo"
 ```
 
-### Patching Resources
+## Patching Resources
 
 ```bash
 # Partially update a node
@@ -223,7 +237,7 @@ kubectl patch deployment valid-deployment  --type json   -p='[{"op": "remove", "
 kubectl patch sa default --type='json' -p='[{"op": "add", "path": "/secrets/1", "value": {"name": "whatever" } }]'
 ```
 
-### Editing Resources
+## Editing Resources
 
 Edit any API resource in your preferred editor.
 
@@ -232,7 +246,7 @@ kubectl edit svc/docker-registry                      # Edit the service named d
 KUBE_EDITOR="nano" kubectl edit svc/docker-registry   # Use an alternative editor
 ```
 
-### Scaling Resources
+## Scaling Resources
 
 ```bash
 kubectl scale --replicas=3 rs/foo                                 # Scale a replicaset named 'foo' to 3
@@ -241,10 +255,10 @@ kubectl scale --current-replicas=2 --replicas=3 deployment/mysql  # If the deplo
 kubectl scale --replicas=5 rc/foo rc/bar rc/baz                   # Scale multiple replication controllers
 ```
 
-### Deleting Resources
+## Deleting Resources
 
 ```bash
-kubectl delete -f ./pod.json                                              # Delete a pod using the type and name specified in pod.json
+kubectl delete -f ./pod.json                                            # Delete a pod using the type and name specified in pod.json
 kubectl delete pod,service baz foo                                        # Delete pods and services with same names "baz" and "foo"
 kubectl delete pods,services -l name=myLabel                              # Delete pods and services with label name=myLabel
 kubectl -n my-ns delete pod,svc --all                                      # Delete all pods and services in namespace my-ns,
@@ -252,32 +266,30 @@ kubectl -n my-ns delete pod,svc --all                                      # Del
 kubectl get pods  -n mynamespace --no-headers=true | awk '/pattern1|pattern2/{print $1}' | xargs  kubectl delete -n mynamespace pod
 ```
 
-### Interacting with running Pods
+## Interacting with running Pods
 
-```bash
-kubectl logs my-pod                                 # dump pod logs (stdout)
-kubectl logs -l name=myLabel                        # dump pod logs, with label name=myLabel (stdout)
-kubectl logs my-pod --previous                      # dump pod logs (stdout) for a previous instantiation of a container
-kubectl logs my-pod -c my-container                 # dump pod container logs (stdout, multi-container case)
-kubectl logs -l name=myLabel -c my-container        # dump pod logs, with label name=myLabel (stdout)
-kubectl logs my-pod -c my-container --previous      # dump pod container logs (stdout, multi-container case) for a previous instantiation of a container
-kubectl logs -f my-pod                              # stream pod logs (stdout)
-kubectl logs -f my-pod -c my-container              # stream pod container logs (stdout, multi-container case)
-kubectl logs -f -l name=myLabel --all-containers    # stream all pods logs with label name=myLabel (stdout)
-kubectl run -i --tty busybox --image=busybox -- sh  # Run pod as interactive shell
-kubectl run nginx --image=nginx --restart=Never -n 
-mynamespace                                         # Run pod nginx in a specific namespace
-kubectl run nginx --image=nginx --restart=Never     # Run pod nginx and write its spec into a file called pod.yaml
---dry-run -o yaml > pod.yaml
+| Command | Description |
+| ------- | ----------- |
+| `kubectl logs my-pod` | dump pod logs (stdout) |
+| `kubectl logs -l name=myLabel` | dump pod logs, with label name=myLabel (stdout) |
+| `kubectl logs my-pod --previous` | dump pod logs (stdout) for a previous instantiation of a container |
+| `kubectl logs my-pod -c my-container` | dump pod container logs (stdout, multi-container case) |
+| `kubectl logs -l name=myLabel -c my-container` | dump pod logs, with label name=myLabel (stdout) |
+| `kubectl logs my-pod -c my-container --previous` | dump pod container logs (stdout, multi-container case) for a previous instantiation of a container |
+| `kubectl logs -f my-pod` | stream pod logs (stdout) |
+| `kubectl logs -f my-pod -c my-container` | stream pod container logs (stdout, multi-container case) |
+| `kubectl logs -f -l name=myLabel --all-containers` | stream all pods logs with label name=myLabel (stdout) |
+| `kubectl run -i --tty busybox --image=busybox -- sh` | Run pod as interactive shell |
+| `kubectl run nginx --image=nginx --restart=Never -n mynamespace` | Run pod nginx in a specific namespace |
+| `kubectl run nginx --image=nginx --restart=Never --dry-run -o yaml > pod.yaml` | Run pod nginx and write its spec into a file called pod.yaml |
+| `kubectl attach my-pod -i` | Attach to Running Container |
+| `kubectl port-forward my-pod 5000:6000` | Listen on port 5000 on the local machine and forward to port 6000 on my-pod |
+| `kubectl exec my-pod -- ls /` | Run command in existing pod (1 container case) |
+| `kubectl exec my-pod -c my-container -- ls /` | Run command in existing pod (multi-container case) |
+| `kubectl top pod POD_NAME --containers` | Show metrics for a given pod and its containers |
 
-kubectl attach my-pod -i                            # Attach to Running Container
-kubectl port-forward my-pod 5000:6000               # Listen on port 5000 on the local machine and forward to port 6000 on my-pod
-kubectl exec my-pod -- ls /                         # Run command in existing pod (1 container case)
-kubectl exec my-pod -c my-container -- ls /         # Run command in existing pod (multi-container case)
-kubectl top pod POD_NAME --containers               # Show metrics for a given pod and its containers
-```
 
-### Interacting with Nodes and Cluster
+## Interacting with Nodes and Cluster
 
 ```bash
 kubectl cordon my-node                                                # Mark my-node as unschedulable
@@ -292,7 +304,7 @@ kubectl cluster-info dump --output-directory=/path/to/cluster-state   # Dump cur
 kubectl taint nodes foo dedicated=special-user:NoSchedule
 ```
 
-#### Resource types
+### Resource types
 
 List all supported resource types along with their shortnames, [API group](https://kubernetes.io/docs/concepts/overview/kubernetes-api/#api-groups), whether they are [namespaced](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces), and [Kind](https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects):
 
@@ -311,7 +323,7 @@ kubectl api-resources --verbs=list,get       # All resources that support the "l
 kubectl api-resources --api-group=extensions # All resources in the "extensions" API group
 ```
 
-#### Formatting output
+### Formatting output
 
 To output details to your terminal window in a specific format, add the `-o` (or `--output`) flag to a supported `kubectl` command.
 
@@ -332,7 +344,7 @@ Examples using `-o=custom-columns`:
 # All images running in a cluster
 kubectl get pods -A -o=custom-columns='DATA:spec.containers[*].image'
 
- # All images excluding "k8s.gcr.io/coredns:1.6.2"
+# All images excluding "k8s.gcr.io/coredns:1.6.2"
 kubectl get pods -A -o=custom-columns='DATA:spec.containers[?(@.image!="k8s.gcr.io/coredns:1.6.2")].image'
 
 # All fields under metadata regardless of name
@@ -341,12 +353,12 @@ kubectl get pods -A -o=custom-columns='DATA:metadata.*'
 
 More examples in the kubectl [reference documentation](https://kubernetes.io/docs/reference/kubectl/overview/#custom-columns).
 
-#### Kubectl output verbosity and debugging
+### Kubectl output verbosity and debugging
 
 Kubectl verbosity is controlled with the `-v` or `--v` flags followed by an integer representing the log level. General Kubernetes logging conventions and the associated log levels are described [here](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-instrumentation/logging.md).
 
-| Verbosity                           | Description                      |
-| ----------------------------------- | -------------------------------- |
+| Verbosity | Description |
+| --------- | ----------- |
 | `--v=0` | Generally useful for this to always be visible to a cluster operator. |
 | `--v=1` | A reasonable default log level if you don’t want verbosity. |
 | `--v=2` | Useful steady state information about the service and important log messages that may correlate to significant changes in the system. This is the recommended default log level for most systems. |
@@ -357,7 +369,8 @@ Kubectl verbosity is controlled with the `-v` or `--v` flags followed by an inte
 | `--v=8` | Display HTTP request contents. |
 | `--v=9` | Display HTTP request contents without truncation of contents. |
 
-## See Also
+See Also
+--------
 
 * [Official tutorial](https://kubernetes.io/docs/tutorials/)
 * Learn more about [Overview of kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
